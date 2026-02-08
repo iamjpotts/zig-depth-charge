@@ -1,0 +1,7 @@
+.{
+    .name = .zig_depth_charge,
+    .version = "0.0.1",
+    .minimum_zig_version = "0.15.2",
+    .paths = .{""},
+    .fingerprint = 0x57238aca4d340b1b,
+}
