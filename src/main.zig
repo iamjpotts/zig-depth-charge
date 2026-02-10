@@ -3,15 +3,25 @@ const std = @import("std");
 const rng = std.crypto.random;
 
 pub fn main() !void {
+    var debug_allocator: std.heap.DebugAllocator(.{}) = .init;
+    const allocator = debug_allocator.allocator();
+
+    defer {
+        _ = debug_allocator.deinit();
+    }
+
     var stdout_buf: [512]u8 = undefined;
     var stdout = std.fs.File.stdout().writer(stdout_buf[0..]);
-    const allocator = std.heap.page_allocator;
 
-    try stdout.interface.print("{s}DEPTH CHARGE\n", .{try spaces(allocator, 30)});
-    try stdout.interface.print("{s}CREATIVE COMPUTING  MORRISTOWN, NEW JERSEY\n", .{try spaces(allocator, 15)});
+    const pad_15 = try spaces(allocator, 15);
+
+    try stdout.interface.print("{s}{s}DEPTH CHARGE\n", .{ pad_15, pad_15 });
+    try stdout.interface.print("{s}CREATIVE COMPUTING  MORRISTOWN, NEW JERSEY\n", .{pad_15});
     try stdout.interface.print("\n\n\n", .{});
     try stdout.interface.print("DIMENSION OF SEARCH AREA: ", .{});
     try stdout.interface.flush();
+
+    allocator.free(pad_15);
 
     const dimension = try inputInteger(allocator);
     try stdout.interface.print("\n", .{});
@@ -42,6 +52,7 @@ pub fn main() !void {
             try stdout.interface.flush();
 
             const input_line = try inputString(allocator);
+            defer allocator.free(input_line);
 
             var iterator = std.mem.splitScalar(u8, input_line, ' ');
 
@@ -96,6 +107,7 @@ pub fn main() !void {
         try stdout.interface.flush();
 
         const another = try inputString(allocator);
+        defer allocator.free(another);
 
         play_again = std.mem.eql(u8, another, "Y");
     }
@@ -120,6 +132,9 @@ fn inputString(allocator: std.mem.Allocator) ![]u8 {
 fn inputInteger(allocator: std.mem.Allocator) !usize {
     const input = try inputString(allocator);
     const value = try std.fmt.parseInt(usize, input, 10);
+
+    allocator.free(input);
+
     return value;
 }
 
