@@ -4,18 +4,20 @@ const rng = std.crypto.random;
 
 pub fn main() !void {
     var stdin_buf: [512]u8 = undefined;
-    var stdin = std.fs.File.stdin().reader(&stdin_buf);
+    var stdin_reader = std.fs.File.stdin().reader(&stdin_buf);
+    const stdin = &stdin_reader.interface;
 
     var stdout_buf: [512]u8 = undefined;
-    var stdout = std.fs.File.stdout().writer(&stdout_buf);
+    var stdout_writer = std.fs.File.stdout().writer(&stdout_buf);
+    const stdout = &stdout_writer.interface;
 
-    try stdout.interface.print("{s}DEPTH CHARGE\n", .{spaces(30)});
-    try stdout.interface.print("{s}CREATIVE COMPUTING  MORRISTOWN, NEW JERSEY\n", .{spaces(15)});
-    try stdout.interface.print("\n\n\n", .{});
-    try stdout.interface.print("DIMENSION OF SEARCH AREA: ", .{});
-    try stdout.interface.flush();
+    try stdout.print("{s}DEPTH CHARGE\n", .{spaces(30)});
+    try stdout.print("{s}CREATIVE COMPUTING  MORRISTOWN, NEW JERSEY\n", .{spaces(15)});
+    try stdout.print("\n\n\n", .{});
+    try stdout.print("DIMENSION OF SEARCH AREA: ", .{});
+    try stdout.flush();
 
-    const dimension = try inputInteger(&stdin.interface);
+    const dimension = try inputInteger(stdin);
     const shots = std.math.log2_int(usize, dimension) + 1;
 
     const mission =
@@ -31,13 +33,13 @@ pub fn main() !void {
         \\
     ;
 
-    try stdout.interface.print(mission, .{shots});
+    try stdout.print(mission, .{shots});
 
     var play_again = true;
 
     while (play_again) {
-        try stdout.interface.print("GOOD LUCK !\n\n", .{});
-        try stdout.interface.flush();
+        try stdout.print("GOOD LUCK !\n\n", .{});
+        try stdout.flush();
 
         const sub_lattitude = rng.intRangeAtMost(usize, 0, dimension);
         const sub_longitude = rng.intRangeAtMost(usize, 0, dimension);
@@ -46,10 +48,10 @@ pub fn main() !void {
         var found_in_tries: usize = 0;
 
         for (1..(shots + 1)) |shot| {
-            try stdout.interface.print("\nTRIAL #{}\n", .{shot});
-            try stdout.interface.flush();
+            try stdout.print("\nTRIAL #{}\n", .{shot});
+            try stdout.flush();
 
-            const input_line = try inputString(&stdin.interface);
+            const input_line = try inputString(stdin);
 
             var iterator = std.mem.splitScalar(u8, input_line, ' ');
 
@@ -66,50 +68,50 @@ pub fn main() !void {
                 break;
             }
 
-            try stdout.interface.print("SONAR REPORTS SHOT WAS ", .{});
+            try stdout.print("SONAR REPORTS SHOT WAS ", .{});
 
             if (lattitude > sub_lattitude) {
-                try stdout.interface.print("NORTH", .{});
+                try stdout.print("NORTH", .{});
             } else if (lattitude < sub_lattitude) {
-                try stdout.interface.print("SOUTH", .{});
+                try stdout.print("SOUTH", .{});
             }
 
             if (longitude > sub_longitude) {
-                try stdout.interface.print("EAST", .{});
+                try stdout.print("EAST", .{});
             } else if (longitude < sub_longitude) {
-                try stdout.interface.print("WEST", .{});
+                try stdout.print("WEST", .{});
             }
 
             if ((lattitude != sub_lattitude) or (longitude != sub_longitude)) {
-                try stdout.interface.print(" AND", .{});
+                try stdout.print(" AND", .{});
             }
 
             if (depth > sub_depth) {
-                try stdout.interface.print(" TOO LOW.\n", .{});
+                try stdout.print(" TOO LOW.\n", .{});
             } else if (depth < sub_depth) {
-                try stdout.interface.print(" TOO HIGH.\n", .{});
+                try stdout.print(" TOO HIGH.\n", .{});
             } else {
-                try stdout.interface.print(" DEPTH OK.\n", .{});
+                try stdout.print(" DEPTH OK.\n", .{});
             }
         }
 
         if (found_in_tries > 0) {
-            try stdout.interface.print("\nB O O M ! ! YOU FOUND IT IN {} TRIES!\n", .{found_in_tries});
+            try stdout.print("\nB O O M ! ! YOU FOUND IT IN {} TRIES!\n", .{found_in_tries});
         } else {
-            try stdout.interface.print("\nYOU HAVE BEEN TORPEDOED!  ABANDON SHIP!\n", .{});
-            try stdout.interface.print("THE SUBMARINE WAS AT {} {} {}\n", .{ sub_lattitude, sub_longitude, sub_depth });
+            try stdout.print("\nYOU HAVE BEEN TORPEDOED!  ABANDON SHIP!\n", .{});
+            try stdout.print("THE SUBMARINE WAS AT {} {} {}\n", .{ sub_lattitude, sub_longitude, sub_depth });
         }
 
-        try stdout.interface.print("\nANOTHER GAME (Y OR N) ", .{});
-        try stdout.interface.flush();
+        try stdout.print("\nANOTHER GAME (Y OR N) ", .{});
+        try stdout.flush();
 
-        const another = try inputString(&stdin.interface);
+        const another = try inputString(stdin);
 
         play_again = std.mem.eql(u8, another, "Y");
     }
 
-    try stdout.interface.print("\nOK.  HOPE YOU ENJOYED YOURSELF.\n", .{});
-    try stdout.interface.flush();
+    try stdout.print("\nOK.  HOPE YOU ENJOYED YOURSELF.\n", .{});
+    try stdout.flush();
 }
 
 fn inputString(reader: *std.io.Reader) ![]const u8 {
