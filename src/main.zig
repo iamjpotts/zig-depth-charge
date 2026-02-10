@@ -20,16 +20,22 @@ pub fn main() !void {
     try stdout.interface.flush();
 
     const dimension = try inputInteger(allocator);
-    try stdout.interface.print("\n", .{});
-
     const shots = std.math.log2_int(usize, dimension) + 1;
 
-    try stdout.interface.print("\nYOU ARE THE CAPTAIN OF THE DESTROYER USS COMPUTER.\n", .{});
-    try stdout.interface.print("AN ENEMY SUB HAS BEEN CAUSING YOU TROUBLE.  YOUR\n", .{});
-    try stdout.interface.print("MISSION IS TO DESTROY IT.  YOU HAVE {} SHOTS.\n", .{shots});
-    try stdout.interface.print("SPECIFY DEPTH CHARGE EXPLOSION POINT WITH A\n", .{});
-    try stdout.interface.print("TRIO OF NUMBERS -- THE FIRST TWO ARE THE\n", .{});
-    try stdout.interface.print("SURFACE COORDINATES; THE THIRD IS THE DEPTH.\n\n", .{});
+    const mission =
+        \\
+        \\
+        \\YOU ARE THE CAPTAIN OF THE DESTROYER USS COMPUTER.
+        \\AN ENEMY SUB HAS BEEN CAUSING YOU TROUBLE.  YOUR
+        \\MISSION IS TO DESTROY IT.  YOU HAVE {} SHOTS.
+        \\SPECIFY DEPTH CHARGE EXPLOSION POINT WITH A
+        \\TRIO OF NUMBERS -- THE FIRST TWO ARE THE
+        \\SURFACE COORDINATES; THE THIRD IS THE DEPTH.
+        \\
+        \\
+    ;
+
+    try stdout.interface.print(mission, .{shots});
 
     var play_again = true;
 
