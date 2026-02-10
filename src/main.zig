@@ -11,7 +11,7 @@ pub fn main() !void {
     }
 
     var stdout_buf: [512]u8 = undefined;
-    var stdout = std.fs.File.stdout().writer(stdout_buf[0..]);
+    var stdout = std.fs.File.stdout().writer(&stdout_buf);
 
     try stdout.interface.print("{s}DEPTH CHARGE\n", .{spaces(30)});
     try stdout.interface.print("{s}CREATIVE COMPUTING  MORRISTOWN, NEW JERSEY\n", .{spaces(15)});
@@ -115,9 +115,10 @@ pub fn main() !void {
 fn inputString(allocator: std.mem.Allocator) ![]u8 {
     var buf: [64]u8 = undefined;
 
-    const bytes_read = try std.fs.File.stdin().read(buf[0..]);
-    const newline_index = std.mem.indexOf(u8, buf[0..bytes_read], "\n") orelse bytes_read;
-    const trimmed = std.mem.trim(u8, buf[0..newline_index], " \n");
+    var stdin = std.fs.File.stdin().reader(&buf);
+    const line = try stdin.interface.takeDelimiterExclusive('\n');
+    const trimmed = std.mem.trim(u8, line, " \n");
+
     const out = try allocator.alloc(u8, trimmed.len);
 
     std.mem.copyForwards(u8, out, trimmed);
