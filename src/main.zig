@@ -3,12 +3,8 @@ const std = @import("std");
 const rng = std.crypto.random;
 
 pub fn main() !void {
-    var debug_allocator: std.heap.DebugAllocator(.{}) = .init;
-    const allocator = debug_allocator.allocator();
-
-    defer {
-        _ = debug_allocator.deinit();
-    }
+    var stdin_buf: [512]u8 = undefined;
+    var stdin = std.fs.File.stdin().reader(&stdin_buf);
 
     var stdout_buf: [512]u8 = undefined;
     var stdout = std.fs.File.stdout().writer(&stdout_buf);
@@ -19,7 +15,7 @@ pub fn main() !void {
     try stdout.interface.print("DIMENSION OF SEARCH AREA: ", .{});
     try stdout.interface.flush();
 
-    const dimension = try inputInteger(allocator);
+    const dimension = try inputInteger(&stdin.interface);
     const shots = std.math.log2_int(usize, dimension) + 1;
 
     const mission =
@@ -53,8 +49,7 @@ pub fn main() !void {
             try stdout.interface.print("\nTRIAL #{}\n", .{shot});
             try stdout.interface.flush();
 
-            const input_line = try inputString(allocator);
-            defer allocator.free(input_line);
+            const input_line = try inputString(&stdin.interface);
 
             var iterator = std.mem.splitScalar(u8, input_line, ' ');
 
@@ -108,8 +103,7 @@ pub fn main() !void {
         try stdout.interface.print("\nANOTHER GAME (Y OR N) ", .{});
         try stdout.interface.flush();
 
-        const another = try inputString(allocator);
-        defer allocator.free(another);
+        const another = try inputString(&stdin.interface);
 
         play_again = std.mem.eql(u8, another, "Y");
     }
@@ -118,25 +112,16 @@ pub fn main() !void {
     try stdout.interface.flush();
 }
 
-fn inputString(allocator: std.mem.Allocator) ![]u8 {
-    var buf: [64]u8 = undefined;
+fn inputString(reader: *std.io.Reader) ![]const u8 {
+    const line = (try reader.takeDelimiter('\n')) orelse "";
+    const trimmed = std.mem.trim(u8, line, " ");
 
-    var stdin = std.fs.File.stdin().reader(&buf);
-    const line = try stdin.interface.takeDelimiterExclusive('\n');
-    const trimmed = std.mem.trim(u8, line, " \n");
-
-    const out = try allocator.alloc(u8, trimmed.len);
-
-    std.mem.copyForwards(u8, out, trimmed);
-
-    return out;
+    return trimmed;
 }
 
-fn inputInteger(allocator: std.mem.Allocator) !usize {
-    const input = try inputString(allocator);
+fn inputInteger(reader: *std.io.Reader) !usize {
+    const input = try inputString(reader);
     const value = try std.fmt.parseInt(usize, input, 10);
-
-    allocator.free(input);
 
     return value;
 }
