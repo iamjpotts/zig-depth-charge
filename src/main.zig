@@ -13,15 +13,11 @@ pub fn main() !void {
     var stdout_buf: [512]u8 = undefined;
     var stdout = std.fs.File.stdout().writer(stdout_buf[0..]);
 
-    const pad_15 = try spaces(allocator, 15);
-
-    try stdout.interface.print("{s}{s}DEPTH CHARGE\n", .{ pad_15, pad_15 });
-    try stdout.interface.print("{s}CREATIVE COMPUTING  MORRISTOWN, NEW JERSEY\n", .{pad_15});
+    try stdout.interface.print("{s}DEPTH CHARGE\n", .{spaces(30)});
+    try stdout.interface.print("{s}CREATIVE COMPUTING  MORRISTOWN, NEW JERSEY\n", .{spaces(15)});
     try stdout.interface.print("\n\n\n", .{});
     try stdout.interface.print("DIMENSION OF SEARCH AREA: ", .{});
     try stdout.interface.flush();
-
-    allocator.free(pad_15);
 
     const dimension = try inputInteger(allocator);
     try stdout.interface.print("\n", .{});
@@ -138,14 +134,12 @@ fn inputInteger(allocator: std.mem.Allocator) !usize {
     return value;
 }
 
-fn repeatChar(allocator: std.mem.Allocator, c: u8, count: usize) ![]u8 {
-    const buf = try allocator.alloc(u8, count);
+fn repeatChar(c: u8, comptime count: usize) [count]u8 {
+    const repeated: [count]u8 = @splat(c);
 
-    @memset(buf, c);
-
-    return buf;
+    return repeated;
 }
 
-fn spaces(allocator: std.mem.Allocator, count: usize) ![]u8 {
-    return repeatChar(allocator, ' ', count);
+fn spaces(comptime count: usize) [count]u8 {
+    return repeatChar(' ', count);
 }
